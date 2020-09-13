@@ -1,4 +1,4 @@
-import React,{ useContext, useState } from 'react';
+import React,{ useContext, useState, useCallback } from 'react';
 //import ReactDom from "react-dom";
 
 function toCelsius(fahrenheit) {
@@ -34,12 +34,12 @@ const BoilingVerdict = (props) => {
     return <p>The water would not boil.</p>;
   }
 
-const TemperatureInput = () => {
-    const { temperature,scale,onTemperatureChange } = useContext(CalContext);
+const TemperatureInput = (props) => {
+    const { scale } = useContext(CalContext);
     return (
         <fieldset>
             <legend>Enter temperature in {scaleNames[scale]}:</legend>
-            <input value={temperature} onChange={()=>onTemperatureChange(temperature)}></input>
+            <input value={props.temperature} onChange={props.onTemperatureChange}></input>
         </fieldset>  
     )
 }
@@ -47,21 +47,26 @@ const TemperatureInput = () => {
 const Calculator = () => {
     const [scale,setScale]= useState("c");
     const [temperature,setTemperature]= useState(0);
-    function handleCelsiusChange (temperature) {
+    //const onCelsiusChange = useCallback( (e)=>handleCelsiusChange(e),[] )
+    //const onFahrenheitChange = useCallback( (e)=>handleFahrenheitChange(e),[] )
+    function handleCelsiusChange (e) {
+        //debugger
         setScale('c')
-        return setTemperature(temperature)
+        return setTemperature(e.target.value)
     }
-    function handleFahrenheitChange (temperature) {
+    function handleFahrenheitChange (e) {
         setScale('f')
-        return setTemperature(temperature)
+        return setTemperature(e.target.value)
     }
     const celsius = scale === 'f' ? tryConvert(temperature, toCelsius) : temperature;
     const fahrenheit = scale === 'c' ? tryConvert(temperature, toFahrenheit) : temperature;
 
     return (
-        <CalContext.Provider value={celsius,fahrenheit}>
-            <TemperatureInput onTemperatureChange={handleCelsiusChange}/>
-            <TemperatureInput onTemperatureChange={handleFahrenheitChange}/> 
+        <CalContext.Provider value={ scale,temperature,celsius,fahrenheit}>
+            <TemperatureInput temperature={celsius}
+           onTemperatureChange={handleCelsiusChange}/>
+            <TemperatureInput temperature={fahrenheit}
+          onTemperatureChange={handleFahrenheitChange}/> 
             <BoilingVerdict celsius={parseFloat(celsius)} />   
         </CalContext.Provider>
     )
